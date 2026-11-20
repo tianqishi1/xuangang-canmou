@@ -1,0 +1,20 @@
+province: jiangsu
+year: 2027
+sheet: 0
+# 真实江苏省考职位表列名（表头匹配自动忽略空白/全角空格）
+# 官方表无独立「学位」「备注」栏：学位要求在「其它」栏（取得相应学位），由抽取器按学历派生
+columns:
+  org_name: 单位名称
+  org_level: 隶属关系
+  region: 地区名称
+  quota: 招考人数
+  major_req: 专业
+  edu_req: 学历
+  other_req: 其它
+  region_code: 地区代码
+  unit_code: 单位代码
+  position_code: 职位代码
+  position_name: 职位名称
+  position_desc: 职位简介
+  exam_kind: 考试类别
+  open_ratio: 开考比例

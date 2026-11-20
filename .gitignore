@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# 本地生成的数据库（用 scripts/import_real.py 重建）
+xuangang.db
+*.db-journal
+
+# IDE / OS
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store

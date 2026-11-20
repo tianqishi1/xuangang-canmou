@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>选岗参谋 · M0 演示</title>
+<style>
+  :root { --pass:#16a34a; --unc:#d97706; --fail:#9ca3af; --bg:#f6f7fb; --ink:#1f2937; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:"PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--ink); }
+  .wrap { max-width:960px; margin:0 auto; padding:24px 16px 60px; }
+  header { margin-bottom:20px; }
+  header h1 { font-size:22px; }
+  header p { color:#6b7280; font-size:13px; margin-top:6px; }
+  .card { background:#fff; border-radius:12px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,.06); margin-bottom:16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+  label { display:block; font-size:12px; color:#6b7280; margin-bottom:4px; }
+  input,select { width:100%; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; }
+  button { margin-top:16px; background:#2563eb; color:#fff; border:0; border-radius:8px; padding:10px 28px; font-size:15px; cursor:pointer; }
+  button:hover { background:#1d4ed8; }
+  .summary { display:flex; gap:12px; margin-bottom:12px; }
+  .pill { padding:6px 14px; border-radius:999px; font-size:13px; color:#fff; }
+  .pill.pass{background:var(--pass);} .pill.unc{background:var(--unc);} .pill.fail{background:var(--fail);}
+  .pos { border-left:4px solid #e5e7eb; padding:12px 14px; border-radius:8px; background:#fff; margin-bottom:10px; cursor:pointer; }
+  .pos.PASS{border-color:var(--pass);} .pos.UNCERTAIN{border-color:var(--unc);} .pos.FAIL{border-color:var(--fail); opacity:.75;}
+  .pos h3 { font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .tag { font-size:11px; padding:2px 8px; border-radius:999px; color:#fff; }
+  .tag.PASS{background:var(--pass);} .tag.UNCERTAIN{background:var(--unc);} .tag.FAIL{background:var(--fail);}
+  .reason { font-size:13px; color:#4b5563; margin-top:6px; }
+  .risks { margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; }
+  .risk { font-size:11px; background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; padding:2px 8px; border-radius:6px; }
+  .meta { font-size:12px; color:#9ca3af; margin-top:4px; }
+  .detail { margin-top:10px; font-size:13px; background:#f9fafb; border-radius:8px; padding:10px; display:none; }
+  .detail table { width:100%; border-collapse:collapse; margin-top:6px; }
+  .detail th,.detail td { border:1px solid #e5e7eb; padding:4px 8px; font-size:12px; text-align:left; }
+  .disclaimer { font-size:12px; color:#9ca3af; margin-top:14px; }
+  h2 { font-size:16px; margin-bottom:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>选岗参谋 <span style="font-size:12px;color:#9ca3af;">M0 最小闭环演示 · 仿真数据</span></h1>
+    <p>填写报考画像 → 确定性资格引擎逐岗匹配（可报 / 存疑 / 不可报），点击岗位查看历史进面线情报卡。</p>
+  </header>
+  <div class="card">
+    <h2>报考画像</h2>
+    <div class="grid">
+      <div><label>学历</label><select id="edu"><option>本科</option><option>大专</option><option>硕士研究生</option><option>博士研究生</option><option>高中</option></select></div>
+      <div><label>学位</label><select id="degree"><option>学士</option><option>硕士</option><option>博士</option><option>无</option></select></div>
+      <div><label>专业（毕业证原文）</label><input id="major" value="计算机科学与技术"></div>
+      <div><label>应届身份</label><select id="fresh"><option value="true">应届</option><option value="false">往届</option><option value="">不确定</option></select></div>
+      <div><label>性别</label><select id="gender"><option value="">不确定</option><option>男</option><option>女</option></select></div>
+      <div><label>政治面貌</label><select id="political"><option>共青团员</option><option>群众</option><option>中共党员</option><option>中共预备党员</option></select></div>
+      <div><label>户籍所在地</label><input id="hukou" value="南京"></div>
+      <div><label>基层工作年限</label><input id="grass" type="number" value="0" min="0"></div>
+      <div><label>证书（逗号分隔）</label><input id="certs" placeholder="如：法律职业资格证书"></div>
+      <div><label>模考估分（选填）</label><input id="score" type="number" placeholder="如 132"></div>
+    </div>
+    <div><label>考试场次</label><select id="examSel" style="width:100%"></select></div>
+    <button onclick="runMatch()">开始匹配</button>
+  </div>
+  <div id="results"></div>
+</div>
+<script>
+let EXAM_ID = null;
+async function init() {
+  const exams = await (await fetch("/api/exams")).json();
+  const sel = document.getElementById("examSel");
+  sel.innerHTML = exams.map(e=>`<option value="${e.id}">${e.name}</option>`).join("");
+  if (exams.length) { EXAM_ID = exams[exams.length-1].id; sel.value = String(EXAM_ID); }
+  sel.onchange = ()=>{ EXAM_ID = parseInt(sel.value, 10); };
+}
+async function runMatch() {
+  if (!EXAM_ID) { alert("数据库无考试场次，请先运行 scripts/run_demo.py"); return; }
+  const fresh = document.getElementById("fresh").value;
+  const profile = {
+    edu: document.getElementById("edu").value,
+    degree: document.getElementById("degree").value,
+    major_text: document.getElementById("major").value,
+    is_fresh: fresh === "" ? null : fresh === "true",
+    political: document.getElementById("political").value,
+    hukou: document.getElementById("hukou").value,
+    gender: document.getElementById("gender").value || null,
+    grassroots_years: parseFloat(document.getElementById("grass").value || "0"),
+    certs: document.getElementById("certs").value.split(/[,，]/).map(s=>s.trim()).filter(Boolean),
+    est_score: parseFloat(document.getElementById("score").value) || null
+  };
+  const res = await fetch("/api/match", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({exam_id: EXAM_ID, profile})});
+  const data = await res.json();
+  render(data);
+}
+function render(data) {
+  const s = data.summary;
+  let html = `<div class="summary">
+    <span class="pill pass">可报 ${s.PASS}</span>
+    <span class="pill unc">存疑 ${s.UNCERTAIN}</span>
+    <span class="pill fail">不可报 ${s.FAIL}</span></div>`;
+  const shown = data.results.slice(0, 200);
+  if (data.results.length > shown.length)
+    html += `<div style="color:#9ca3af;font-size:12px;margin:6px 0;">结果过多，仅显示前 200 条（共 ${data.results.length} 条），请细化画像条件。</div>`;
+  for (const r of shown) {
+    const label = {PASS:"可报",UNCERTAIN:"存疑",FAIL:"不可报"}[r.status];
+    const risks = (r.risk_flags||[]).map(x=>`<span class="risk">${x}</span>`).join("");
+    html += `<div class="pos ${r.status}" onclick="toggleDetail(${r.position_id}, this)">
+      <h3><span class="tag ${r.status}">${label}</span>${r.org_name}
+        <span style="font-size:12px;color:#9ca3af;">${r.region||""} · ${r.org_level||""} · 招${r.quota}人</span></h3>
+      <div class="reason">${r.reason}</div>
+      ${risks?`<div class="risks">${risks}</div>`:""}
+      <div class="detail" id="d-${r.position_id}"></div>
+    </div>`;
+  }
+  html += `<div class="disclaimer">${data.disclaimer}</div>`;
+  document.getElementById("results").innerHTML = html;
+}
+async function toggleDetail(pid, el) {
+  const d = document.getElementById("d-"+pid);
+  if (d.style.display === "block") { d.style.display = "none"; return; }
+  const c = await (await fetch(`/api/positions/${pid}/card`)).json();
+  let t = `<b>专业要求：</b>${c.major_req_raw||"不限"}　<b>学历：</b>${c.edu_req_raw||"不限"}　<b>其他：</b>${c.other_req_raw||"无"}　<b>备注：</b>${c.remark_raw||"无"}`;
+  if (c.score_lines && c.score_lines.length) {
+    t += `<table><tr><th>年份</th><th>进面线</th><th>竞争比</th><th>过审人数</th></tr>` +
+      c.score_lines.map(l=>`<tr><td>${l.year}</td><td>${l.score}</td><td>${l.ratio}:1</td><td>${l.approved}</td></tr>`).join("") + "</table>";
+  } else { t += `<div style="color:#9ca3af;margin-top:6px;">暂无历史分数线数据</div>`; }
+  t += `<div style="color:#9ca3af;margin-top:6px;">${c.disclaimer}</div>`;
+  d.innerHTML = t; d.style.display = "block";
+}
+init();
+</script>
+</body>
+</html>

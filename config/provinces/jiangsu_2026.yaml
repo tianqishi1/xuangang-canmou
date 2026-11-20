@@ -1,0 +1,13 @@
+province: jiangsu
+year: 2026
+sheet: 0
+columns:
+  org_name: 单位名称
+  org_level: 机构层级
+  region: 地区
+  quota: 招考人数
+  major_req: 专业要求
+  edu_req: 学历要求
+  degree_req: 学位要求
+  other_req: 其他条件
+  remark: 备注

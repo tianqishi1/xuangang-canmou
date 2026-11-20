@@ -1,0 +1,88 @@
+{
+  "exam_id": 2,
+  "catalog": "already imported",
+  "positions": {
+    "shengji_2027.xls": {
+      "rows": 61,
+      "created": 61,
+      "need_manual_review": 37
+    },
+    "nanjing_2027.xlsx": {
+      "rows": 606,
+      "created": 606,
+      "need_manual_review": 162
+    },
+    "suzhou_2027.xls": {
+      "rows": 628,
+      "created": 628,
+      "need_manual_review": 232
+    },
+    "wuxi_2027.xls": {
+      "rows": 349,
+      "created": 349,
+      "need_manual_review": 74
+    },
+    "xuzhou_2027.xls": {
+      "rows": 592,
+      "created": 592,
+      "need_manual_review": 150
+    },
+    "changzhou_2027.xls": {
+      "rows": 274,
+      "created": 274,
+      "need_manual_review": 82
+    },
+    "zhenjiang_2027.xls": {
+      "rows": 259,
+      "created": 259,
+      "need_manual_review": 65
+    },
+    "nantong_2027.xls": {
+      "rows": 428,
+      "created": 428,
+      "need_manual_review": 109
+    },
+    "lianyungang_2027.xls": {
+      "rows": 426,
+      "created": 426,
+      "need_manual_review": 134
+    },
+    "huaian_2027.xls": {
+      "rows": 378,
+      "created": 378,
+      "need_manual_review": 151
+    },
+    "yancheng_2027.xls": {
+      "rows": 626,
+      "created": 626,
+      "need_manual_review": 172
+    },
+    "yangzhou_2027.xls": {
+      "rows": 404,
+      "created": 404,
+      "need_manual_review": 113
+    },
+    "taizhou_2027.xls": {
+      "rows": 258,
+      "created": 258,
+      "need_manual_review": 71
+    },
+    "suqian_2027.xls": {
+      "rows": 313,
+      "created": 313,
+      "need_manual_review": 84
+    },
+    "sifaxingzheng_2027.xls": {
+      "rows": 166,
+      "created": 166,
+      "need_manual_review": 166
+    }
+  },
+  "history": {
+    "lines": 5200,
+    "skipped_dept": 210,
+    "skipped_name": 255
+  },
+  "total_positions": 5768,
+  "parse_status_auto": 5768
+}
